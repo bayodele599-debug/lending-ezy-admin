@@ -1,6 +1,6 @@
 'use client';
 import {useCallback,useEffect,useState} from 'react';
-import {Activity,ArrowDownRight,ArrowRight,ArrowUpRight,BadgeCheck,BarChart3,Bell,Binary,Building2,CheckCircle2,ChevronDown,CircleDollarSign,Clock3,CloudOff,FileText,Globe2,LayoutDashboard,LockKeyhole,RefreshCcw,Search,Settings,ShieldAlert,ShieldCheck,Users,Wallet2} from 'lucide-react';
+import {Activity,ArrowDownRight,ArrowRight,ArrowUpRight,BadgeCheck,BarChart3,Bell,Binary,Building2,CheckCircle2,ChevronDown,CircleDollarSign,Clock3,CloudOff,FileText,Globe2,LayoutDashboard,LockKeyhole,RefreshCcw,Search,Settings,ShieldAlert,ShieldCheck,Users,Wallet2,Mail} from 'lucide-react';
 import {motion,useReducedMotion} from 'framer-motion';
 import Link from 'next/link';
 type View='overview'|'applications'|'partners'|'markets'|'settings';
