@@ -1,18 +1,15 @@
 # Lending Ezy — Administration
 
-Internal operations **preview** for the worldwide lending technology platform.
+Premium administrative preview plus a **password-protected enquiry inbox**, with server-side API forwarding.
 
-- Read-only sandbox overview from the backend API
-- Product, country and partner-launch information
-- Live originations, disbursements, and repayments locked at zero
-- No privileged financial operations or real customer data
-
-## Start
+## Local setup
 ```bash
 npm install
 cp .env.example .env.local
 npm run dev -- -p 3001
 ```
-Start `lending-ezy-backend` on localhost:8000, with `APP_ENV=development` for sandbox API access. Admin dashboard is at http://localhost:3001.
+Generate `ADMIN_SESSION_SECRET` (32+ random characters), `ADMIN_API_TOKEN` (32+ random characters), and a strong unique `ADMIN_PASSWORD` (16+ characters). The backend's `ADMIN_API_TOKEN` must match. Never commit secrets or expose private values via `NEXT_PUBLIC_`.
 
-**Not production ready:** Authentication, RBAC, tenant isolation, migrations, real provider integrations and compliance approvals are not yet implemented. Do not deploy this unauthenticated admin preview against real customer data.
+Routes: `/` demo command centre, `/login` secure admin login, `/inbox` protected enquiries and replies.
+
+**Safe defaults:** No configured admin credentials means login is disabled. Backend access requires server credentials. Email sending requires configured SMTP. Deploy behind additional access protection, rate limiting and security monitoring before collecting real user data. This is not a loan-origination platform.

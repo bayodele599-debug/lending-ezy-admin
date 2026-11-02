@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useState} from 'react';
 import {Activity,ArrowDownRight,ArrowRight,ArrowUpRight,BadgeCheck,BarChart3,Bell,Binary,Building2,CheckCircle2,ChevronDown,CircleDollarSign,Clock3,CloudOff,FileText,Globe2,LayoutDashboard,LockKeyhole,RefreshCcw,Search,Settings,ShieldAlert,ShieldCheck,Users,Wallet2} from 'lucide-react';
 import {motion,useReducedMotion} from 'framer-motion';
+import Link from 'next/link';
 type View='overview'|'applications'|'partners'|'markets'|'settings';
 type Stats={mode:string;application_count:number;live_originations:number;live_disbursements:number;live_repayments:number};
 const API=(process.env.NEXT_PUBLIC_API_URL||'http://localhost:8000').replace(/\/$/,'');
@@ -17,7 +18,7 @@ export default function Home(){
  const title:Record<View,string>={overview:'Good morning, team',applications:'Applications',partners:'Lending partners',markets:'Markets & compliance',settings:'Platform configuration'};
  return <div className="shell">
   <aside className={mobileNav?'sidebar mobile-visible':'sidebar'}><div className="side-brand"><div className="brand-mark">L<span>.</span></div><div><strong>LENDING EZY</strong><small>COMMAND CENTRE</small></div></div><div className="workspace-badge"><div className="workspace-symbol">LE</div><div><b>Platform workspace</b><small>Sandbox environment</small></div><ChevronDown size={15}/></div>
-  <div className="side-nav-label">WORKSPACE</div><nav aria-label="Admin navigation">{tabs}</nav><div className="side-divider"/><div className="side-nav-label">ACCESS</div><div className="side-info"><ShieldCheck size={17}/><span>Read-only demonstration</span></div>
+  <div className="side-nav-label">WORKSPACE</div><nav aria-label="Admin navigation">{tabs}</nav><Link href="/inbox" className="side-inbox-link"><Mail size={18}/> Enquiry inbox <ArrowRight size={14}/></Link><div className="side-divider"/><div className="side-nav-label">ACCESS</div><div className="side-info"><ShieldCheck size={17}/><span>Read-only demonstration</span></div>
   <div className="side-bottom"><div className="side-warning"><LockKeyhole size={18}/><strong>Financial operations locked</strong><p>Live lending requires authorisation, secure identities and approved payment rails.</p></div><div className="side-profile"><span className="avatar">DE</span><div><strong>Demo operator</strong><small>No privileged access</small></div><span>⋯</span></div></div>
   </aside>
   {mobileNav&&<button className="nav-overlay" aria-label="Close navigation" onClick={()=>setMobileNav(false)}/>}
