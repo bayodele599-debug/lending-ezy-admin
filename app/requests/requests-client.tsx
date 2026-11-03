@@ -14,6 +14,8 @@ type Entry={
 };
 type History={id:string;old_status:string|null;new_status:string;actor:string;note:string|null;created_at:string};
 type Detail={request:Entry;history:History[]};
+type ThreadMessage={id:string;author:"admin"|"customer";body:string;created_at:string};
+type Thread={messages:ThreadMessage[];reference:string;has_customer_account:boolean};
 type Listing={requests:Entry[];total:number;offset:number;limit:number;error?:string};
 
 const states:Record<Status,string>={
@@ -38,6 +40,7 @@ export default function RequestsClient(){
  const [detail,setDetail]=useState<Detail|null>(null),[decision,setDecision]=useState<Status|"">("");
  const [note,setNote]=useState(""),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true);
  const [error,setError]=useState(""),[notice,setNotice]=useState("");
+ const [thread,setThread]=useState<Thread|null>(null),[replyText,setReplyText]=useState("");
  const load=useCallback(async()=>{
   setLoading(true);setError("");
   try{
@@ -52,10 +55,12 @@ export default function RequestsClient(){
   finally{setLoading(false)}
  },[kind,stage,offset]);
  const open=useCallback(async(id:string)=>{
-  setSelected(id);setDetail(null);setDecision("");setNote("");
+  setSelected(id);setDetail(null);setThread(null);setReplyText("");setDecision("");setNote("");
   try{const res=await fetch("/api/requests/"+id,{cache:"no-store"});const data=await res.json();
    if(!res.ok)throw new Error(data.error||"Unable to open request");
    setDetail(data as Detail);
+   const conversation=await fetch("/api/requests/"+id+"/messages",{cache:"no-store"});
+   if(conversation.ok)setThread(await conversation.json() as Thread);
   }catch(e){setSelected(null);setError(e instanceof Error?e.message:"Unable to open request")}
  },[]);
  useEffect(()=>{void load()},[load]);
@@ -72,6 +77,21 @@ export default function RequestsClient(){
    setNotice("Review saved with a reason and recorded in the case history.");
    await Promise.all([open(active.id),load()]);
   }catch(e){setError(e instanceof Error?e.message:"Unable to record review")}
+  finally{setBusy(false)}
+ }
+ async function sendMessage(){
+  if(!active||!thread?.has_customer_account||replyText.trim().length<2||busy)return;
+  setBusy(true);setError("");setNotice("");
+  try{
+   const res=await fetch("/api/requests/"+active.id+"/messages",{
+    method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({body:replyText.trim()})});
+   const body=await res.json();
+   if(!res.ok)throw new Error(body.detail||body.error||"Unable to send message");
+   setReplyText("");
+   const refreshed=await fetch("/api/requests/"+active.id+"/messages",{cache:"no-store"});
+   if(refreshed.ok)setThread(await refreshed.json() as Thread);
+   setNotice("Message delivered to the customer's private account thread. No email was sent.");
+  }catch(e){setError(e instanceof Error?e.message:"Unable to send message")}
   finally{setBusy(false)}
  }
  async function signout(){await fetch("/api/logout",{method:"POST"});window.location.assign("/login");}
@@ -131,6 +151,19 @@ export default function RequestsClient(){
         <label>Reason / internal note<textarea rows={4} maxLength={3000} value={note} onChange={e=>setNote(e.target.value)} placeholder="What was reviewed, and why is this status appropriate?"/></label>
         <button disabled={busy||!decision||note.trim().length<3} onClick={submitReview}><ShieldCheck size={17}/>{busy?"Saving…":"Save review decision"}</button>
        </div>
+       <section className="review-thread" aria-label="Customer conversation">
+        <div className="review-section-head"><p className="review-eyebrow">CUSTOMER CONVERSATION</p><h3>Direct messages</h3></div>
+        {!thread?<p className="review-thread-note">Loading conversation, or the messaging service is unavailable.</p>:
+         !thread.has_customer_account?<p className="review-thread-note">This case was submitted without a signed-in account. Direct portal messages are unavailable; use verified email contact instead.</p>:<>
+          <p className="review-thread-note">These messages are visible to the customer. Internal review notes above stay private.</p>
+          <div className="review-messages">{thread.messages.length===0?<p>No messages yet.</p>:thread.messages.map(message=>
+           <div className={"review-thread-message "+(message.author==="admin"?"own":"")} key={message.id}>
+            <span>{message.author==="admin"?"Review team":"Customer"} · {date(message.created_at)}</span><p>{message.body}</p>
+           </div>)}</div>
+          <label className="review-reply-label">Message to customer<textarea rows={3} maxLength={2000} value={replyText} onChange={e=>setReplyText(e.target.value)} placeholder="Request information or answer a question. Never include internal-only notes."/></label>
+          <button type="button" className="review-send-message" disabled={busy||replyText.trim().length<2} onClick={sendMessage}>Send to customer account <ArrowRight size={16}/></button>
+         </>}
+       </section>
        <div className="review-history"><p className="review-eyebrow">CASE HISTORY</p><h3>Recorded activity</h3>{(detail?.history||[]).map(event=>
         <div key={event.id}><span><strong>{states[event.new_status as Status]||event.new_status}</strong><time>{date(event.created_at)}</time></span><p>{event.note||"No additional note"}</p><small>Recorded by {event.actor}</small></div>)}</div>
       </>}

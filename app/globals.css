@@ -124,3 +124,21 @@
  .review-action{padding:19px}
 }
 @media(max-width:375px){.review-filters{grid-template-columns:1fr}.review-metrics{grid-template-columns:1fr}.review-brand strong{font-size:14px}}
+
+
+/* Private customer correspondence; clearly distinct from internal review notes. */
+.review-thread{border-top:1px solid #dce5e6;padding:30px 32px;background:linear-gradient(155deg,#f4f8f5,#eef4ee)}
+.review-thread .review-section-head{margin-bottom:12px}
+.review-thread .review-section-head h3{font-size:21px;font-weight:600;margin:8px 0 0}
+.review-thread-note{color:#4c6758;font-size:12px;line-height:1.7;margin-bottom:17px}
+.review-messages{display:flex;flex-direction:column;gap:12px;max-height:420px;overflow-y:auto;margin:17px 0}
+.review-messages>p{color:#546a5e;font-size:12px}
+.review-thread-message{max-width:88%;align-self:flex-start;border:1px solid #cfdfd2;background:#fff;border-radius:14px;padding:15px 18px}
+.review-thread-message.own{align-self:flex-end;background:#dfeee0}
+.review-thread-message span{color:#42654b;font-size:10px;font-weight:700}
+.review-thread-message p{margin:8px 0 0;color:#213b2a;font-size:12px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}
+.review-reply-label{display:flex;flex-direction:column;gap:9px;font-size:12px;font-weight:700;color:#35523b}
+.review-reply-label textarea{min-height:89px;border:1px solid #b5d0bb;border-radius:11px;background:#fff;padding:12px;color:#183825;font:inherit;resize:vertical}
+.review-send-message{display:inline-flex;align-items:center;gap:9px;background:#24593c;color:white;border:0;border-radius:10px;padding:13px 17px;margin-top:15px;font-size:12px;font-weight:700}
+.review-send-message:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:600px){.review-thread{padding:23px 18px}.review-thread-message{max-width:100%}}
