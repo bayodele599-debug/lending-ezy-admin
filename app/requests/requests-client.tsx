@@ -17,6 +17,7 @@ type Detail={request:Entry;history:History[]};
 type ThreadMessage={id:string;author:"admin"|"customer";body:string;created_at:string};
 type Thread={messages:ThreadMessage[];reference:string;has_customer_account:boolean};
 type Listing={requests:Entry[];total:number;offset:number;limit:number;error?:string};
+type Metrics={total:number;recent:number;attention:number;period_days:number};
 
 const states:Record<Status,string>={
  submitted:"New",in_review:"Under review",needs_information:"More information needed",
@@ -35,6 +36,7 @@ function date(s:string){try{return new Date(s).toLocaleString(undefined,{dateSty
 export default function RequestsClient(){
  const [items,setItems]=useState<Entry[]>([]);
  const [total,setTotal]=useState(0),[offset,setOffset]=useState(0);
+ const [metrics,setMetrics]=useState<Metrics|null>(null);
  const [kind,setKind]=useState<Kind|"all">("all"),[stage,setStage]=useState<Status|"all">("all");
  const [search,setSearch]=useState(""),[selected,setSelected]=useState<string|null>(null);
  const [detail,setDetail]=useState<Detail|null>(null),[decision,setDecision]=useState<Status|"">("");
@@ -47,7 +49,11 @@ export default function RequestsClient(){
    const q=new URLSearchParams({offset:String(offset)});
    if(kind!=="all")q.set("kind",kind);
    if(stage!=="all")q.set("status",stage);
-   const res=await fetch("/api/requests?"+q,{cache:"no-store"});
+   const [res,stats]=await Promise.all([
+    fetch("/api/requests?"+q,{cache:"no-store"}),
+    fetch("/api/metrics",{cache:"no-store"})
+   ]);
+   if(stats.ok)setMetrics(await stats.json() as Metrics);
    const data=await res.json() as Listing;
    if(!res.ok)throw new Error(data.error||"Unable to load review queue");
    setItems(data.requests||[]);setTotal(data.total||0);
@@ -107,8 +113,8 @@ export default function RequestsClient(){
     <button type="button" className="review-refresh" onClick={()=>void load()} disabled={loading}><RefreshCcw size={17}/> Refresh</button></div>
    <div className="review-stats">
     <div><span>Requests matching filters</span><strong>{loading?"—":total}</strong><small>Including other pages</small></div>
-    <div><span>On this page</span><strong>{loading?"—":items.length}</strong><small>Up to 50 records</small></div>
-    <div><span>Awaiting attention</span><strong>{loading?"—":items.filter(x=>["submitted","in_review"].includes(x.status)).length}</strong><small>Visible-page count</small></div>
+    <div><span>Last 30 days</span><strong>{loading?"—":metrics?.recent??"—"}</strong><small>All financing cases</small></div>
+    <div><span>Awaiting attention</span><strong>{loading?"—":metrics?.attention??"—"}</strong><small>Across all pages</small></div>
    </div>
    {error&&<div className="review-error" role="alert">{error}</div>}
    {notice&&<div className="review-notice" role="status"><Check size={18}/>{notice}<button type="button" aria-label="Dismiss" onClick={()=>setNotice("")}><X size={16}/></button></div>}
